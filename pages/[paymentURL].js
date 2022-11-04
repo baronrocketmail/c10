@@ -9,6 +9,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import React from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "../app/(components)/CheckoutForm";
 
 export async function getStaticPaths(){
     const paths = await fetch("https://undefxx.com/api/payments/paths").then(x => x.json())
@@ -32,6 +33,9 @@ function numberWithCommas(num) {
 }
 
 export default function Page(props){
+    const stripePromise = loadStripe("pk_live_51LlESTC3Ie0MSAM2CQtveok1BNyKHlkw8W0aVunFTMYjMAGi0y6dEaHreNGy0TC4oRkfSMwOkcXUftn0oTlwDaBg00bnHjzls6");
+
+    const [clientSecret, setClientSecret] = useState(props.paymentInfo.clientSecret)
     let links = [{label: "<---", href: "/"}, {label: "", href: "/"}]
 
     for(let elem in props.unpaid){
@@ -41,10 +45,26 @@ export default function Page(props){
         } else  links.push({label: "", href:"/"})
     }
 
+    const appearance = {
+        theme: 'stripe',
+    };
+
+    const options = {
+        clientSecret,
+        appearance,
+    };
+
 
     return (
             <div className={myFont.className}>
                 <Links links={links}/>
+                <div className="App">
+                    {clientSecret && (
+                            <Elements options={options} stripe={stripePromise}>
+                                <CheckoutForm />
+                            </Elements>
+                            )}
+                </div>
 
             </div>
             )
